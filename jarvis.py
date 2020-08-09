@@ -295,7 +295,6 @@ class Jarvis:
         with open(file, 'rb') as gif_file:
             data = gif_file.read()
             b64_gif = b64encode(data)
-            print('Client-ID {}'.format(self.imgur_client_id))
             header = {'Authorization': 'Client-ID {}'.format(self.imgur_client_id)}
             data = {'image': b64_gif}
 

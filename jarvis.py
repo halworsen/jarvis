@@ -73,7 +73,7 @@ class Jarvis:
         """
         self.discord_webhook_token = new_token
 
-    def add_caption(self, caption):
+    def add_caption_to_pool(self, caption):
         """
         Add a new caption to the caption pool
 

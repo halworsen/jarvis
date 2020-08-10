@@ -182,6 +182,59 @@ class Jarvis:
         cropped_image = image.crop((0, crop_y, image.size[0], image.size[1]))
         return cropped_image
 
+    def wrap_text(self, text, max_size, font):
+        """
+        Adds line breaks to the text so that it will fit width-wise
+        inside the given maximum size
+
+        TODO: fix this shit, it doesn't wrap right
+
+        Arguments:
+            text: The text to wrap
+            max_size: The max width, in pixels, that the text can be
+            font: The font used to draw the text
+
+        Returns: The text with line breaks inserted
+        """
+
+        # We just need an arbitrary image to start a drawing context
+        img = Image.new('RGB', (1,1))
+        draw_ctx = ImageDraw.Draw(img)
+        text_size = draw_ctx.textsize(text, font=font)
+
+        if text_size[0] < max_size:
+            return text
+
+        # Split the text up into words, and add words to each line until the max size is exceeded
+        words = text.split(' ')
+        lines = []
+
+        current_line = []
+        text_size = (0, 0)
+        while len(words):
+            next_word = words.pop(0)
+
+            # Ensure that the word alone fits on the line.
+            # If it doesn't we can't do much without splitting the word itself up
+            # and i cant be bothered
+            word_size = draw_ctx.textsize(next_word, font=font)
+            if word_size[0] > max_size:
+                raise ValueError('cannot wrap text, the word "{}" is too long'.format(next_word))
+ 
+            # Word would cause the line to be too long
+            if text_size[0] + word_size[0] > max_size:
+                lines.append(' '.join(current_line))
+                current_line = [next_word]
+                text_size = word_size
+            # Add the word to the line and update text size
+            else:
+                current_line.append(next_word)
+                text_size = draw_ctx.textsize(' '.join(current_line), font=font)
+
+        # Append the final line
+        lines.append(' '.join(current_line))
+        return '\n'.join(lines)
+
     def add_caption(self, image, caption, padding):
         """
         Adds a solid white & black caption to the top of the image
@@ -189,7 +242,7 @@ class Jarvis:
         Arguments:
             image: The image to caption
             caption: The caption to add to the image
-            padding: The amount of padding in pixels to use in the y direction
+            padding: The amount of padding around the caption in pixels
 
         Returns: A captioned image
         """
@@ -203,8 +256,13 @@ class Jarvis:
 
         draw_ctx = ImageDraw.Draw(image)
         caption_size = draw_ctx.textsize(caption, font=caption_font)
-        if caption_size[0] > image.size[0]:
-            raise ValueError("The caption is too long to fit in the image! Split it up into more lines")
+
+        # If the caption is too wide, split it up into multiple lines
+        if caption_size[0] > (image.size[0] - 2*padding):
+            # Wrap the text to make it fit
+            caption = self.wrap_text(caption, (image.size[0] - 2*padding), caption_font)
+            caption_size = draw_ctx.textsize(caption, font=caption_font)
+
         # Caption size including padding
         # For the * 1.21 see https://stackoverflow.com/questions/55773962/pillow-how-to-put-the-text-in-the-center-of-the-image
         true_caption_size = (caption_size[0], int(caption_size[1] * 1.20 + padding * 2))

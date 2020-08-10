@@ -7,6 +7,7 @@ from random import choice, seed
 from ifunny import Client
 from moviepy.editor import VideoFileClip
 from PIL import Image, ImageDraw, ImageFont
+from pygifsicle import optimize
 from requests import post
 
 
@@ -340,6 +341,9 @@ class Jarvis:
             duration=frames[1],
             loop=0,
         )
+
+        # Optimize with gifsicle
+        optimize(file_name)
 
     def upload_to_imgur(self, file):
         """

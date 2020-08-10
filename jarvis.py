@@ -38,7 +38,7 @@ class Jarvis:
 
     def __init__(self):
         self.ifunny_client = Client(prefix='/')
-        self.caption_pool = ['fart']
+        self.caption_pool = []
 
         self.imgur_client_id = ''
         self.discord_webhook_id = ''
@@ -194,6 +194,10 @@ class Jarvis:
         Returns: A captioned image
         """
 
+        # as god intended
+        if not caption:
+            caption = 'fart'
+
         caption_font_size = int(image.size[0] * self.CAPTION_SIZE_RATIO)
         caption_font = ImageFont.truetype(self.font, caption_font_size)
 
@@ -224,6 +228,7 @@ class Jarvis:
             caption,
             font=caption_font,
             fill=(0, 0, 0, 255),
+            align='center',
             spacing=4,
         )
 
